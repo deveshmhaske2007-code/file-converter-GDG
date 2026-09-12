@@ -1,0 +1,21 @@
+{
+  "name": "pixelforge-studio",
+  "version": "1.0.0",
+  "description": "High-performance, 100% client-side Image and PDF Converter web application.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "image-converter",
+    "pdf-converter",
+    "client-side",
+    "jspdf",
+    "jszip",
+    "canvas",
+    "privacy-first"
+  ],
+  "author": "PixelForge Team",
+  "license": "MIT"
+}

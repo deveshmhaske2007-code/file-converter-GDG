@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixelForge Studio — Client-Side Image & PDF Converter</title>
+  <meta name="description" content="Ultra-fast, 100% private in-browser image and PDF converter studio. Convert JPG, PNG, WEBP, GIF, SVG, BMP to PDF, JPG, PNG, WEBP with zero server uploads.">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Favicon Icon (SVG Data URI) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14H7v-2h4v2zm6 0h-4v-2h4v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z'/%3E%3C/svg%3E">
+
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.5.1 for Clean Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- External Client-Side Libraries via CDN -->
+  <!-- jsPDF for In-Browser PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- JSZip for Multiple Converted Files Bundling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="app-header">
+    <div class="header-inner container">
+      <a href="#converter" class="brand-logo" id="logoLink">
+        <div class="brand-icon">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">PixelForge<span class="accent-dot">.</span></span>
+          <span class="brand-tag">Studio</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="nav-menu" id="navMenu">
+        <a href="#converter" class="nav-link active" data-nav="converter">
+          <i class="fa-solid fa-sliders"></i> Studio
+        </a>
+        <a href="#image-to-pdf" class="nav-link" data-nav="image-to-pdf">
+          <i class="fa-solid fa-file-pdf"></i> Image to PDF
+        </a>
+        <a href="#jpg-to-png" class="nav-link" data-nav="jpg-to-png">
+          <i class="fa-solid fa-image"></i> JPG to PNG
+        </a>
+        <a href="#webp-to-jpg" class="nav-link" data-nav="webp-to-jpg">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> WEBP to JPG
+        </a>
+        <a href="#how-it-works" class="nav-link" data-nav="how-it-works">
+          <i class="fa-solid fa-circle-nodes"></i> How It Works
+        </a>
+        <a href="#privacy" class="nav-link" data-nav="privacy">
+          <i class="fa-solid fa-shield-halved"></i> Privacy
+        </a>
+      </nav>
+
+      <!-- Security Status Badge & Mobile Toggle -->
+      <div class="header-actions">
+        <div class="privacy-badge" title="All processing happens on your local device. No files leave your machine.">
+          <span class="status-pulse"></span>
+          <i class="fa-solid fa-lock text-accent"></i>
+          <span class="badge-text">100% In-Browser</span>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <nav class="mobile-nav-links">
+      <a href="#converter" class="mobile-nav-link" data-nav="converter"><i class="fa-solid fa-sliders"></i> Studio</a>
+      <a href="#image-to-pdf" class="mobile-nav-link" data-nav="image-to-pdf"><i class="fa-solid fa-file-pdf"></i> Image to PDF</a>
+      <a href="#jpg-to-png" class="mobile-nav-link" data-nav="jpg-to-png"><i class="fa-solid fa-image"></i> JPG to PNG</a>
+      <a href="#webp-to-jpg" class="mobile-nav-link" data-nav="webp-to-jpg"><i class="fa-solid fa-wand-magic-sparkles"></i> WEBP to JPG</a>
+      <a href="#how-it-works" class="mobile-nav-link" data-nav="how-it-works"><i class="fa-solid fa-circle-nodes"></i> How It Works</a>
+      <a href="#privacy" class="mobile-nav-link" data-nav="privacy"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</a>
+    </nav>
+  </div>
+
+  <main class="main-content">
+    
+    <!-- ============================================== -->
+    <!-- VIEW 1: MAIN CONVERTER STUDIO (#converter) -->
+    <!-- ============================================== -->
+    <section class="view-section active" id="view-converter">
+      <div class="container">
+        
+        <!-- Preset Hero Notification Banner (shows when navigating to #image-to-pdf, #jpg-to-png, etc.) -->
+        <div class="preset-banner" id="presetBanner" style="display: none;">
+          <div class="preset-info">
+            <div class="preset-icon" id="presetIcon">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div>
+              <h2 class="preset-title" id="presetTitle">Image to PDF Mode</h2>
+              <p class="preset-desc" id="presetDesc">Pre-configured for combining your images into a high-resolution, custom-formatted PDF document.</p>
+            </div>
+          </div>
+          <button class="btn-ghost-sm" id="presetDismissBtn" title="Dismiss preset banner">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Studio Hero Title -->
+        <div class="studio-hero">
+          <div class="hero-chip">
+            <i class="fa-solid fa-bolt-lightning"></i> Fast, Private, Zero-Cloud
+          </div>
+          <h1 class="hero-title">Universal Image &amp; PDF Converter</h1>
+          <p class="hero-subtitle">Convert, compress, reorder, rotate, and package your visual media in seconds. Files never touch any server.</p>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/bmp">
+          
+          <div class="dropzone-content">
+            <div class="dropzone-icon-wrapper">
+              <i class="fa-solid fa-cloud-arrow-up dropzone-main-icon"></i>
+              <div class="dropzone-sparkle"><i class="fa-solid fa-sparkles"></i></div>
+            </div>
+            <h3 class="dropzone-title">Drag &amp; drop your images here</h3>
+            <p class="dropzone-subtitle">or click to browse from your computer / paste from clipboard (<kbd>Ctrl</kbd>+<kbd>V</kbd>)</p>
+            <div class="dropzone-tags">
+              <span class="file-tag">JPG</span>
+              <span class="file-tag">PNG</span>
+              <span class="file-tag">WEBP</span>
+              <span class="file-tag">GIF</span>
+              <span class="file-tag">SVG</span>
+              <span class="file-tag">BMP</span>
+            </div>
+            <button class="btn btn-primary dropzone-browse-btn" id="browseBtn" type="button">
+              <i class="fa-solid fa-folder-open"></i> Browse Files
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Conversion Bar & PDF Settings -->
+        <div class="controls-panel">
+          <div class="controls-grid">
+            
+            <!-- Output Format Selector -->
+            <div class="control-group">
+              <label class="control-label" for="outputFormat">
+                <i class="fa-solid fa-file-export text-accent"></i> Convert To:
+              </label>
+              <div class="custom-select-wrapper">
+                <select id="outputFormat" class="control-select">
+                  <option value="pdf">PDF Document (.pdf)</option>
+                  <option value="png">PNG Image (.png)</option>
+                  <option value="jpg">JPEG Image (.jpg)</option>
+                  <option value="webp">WEBP Modern (.webp)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+
+            <!-- Quality / Compression Slider -->
+            <div class="control-group" id="qualityControlGroup">
+              <div class="control-label-row">
+                <label class="control-label" for="qualitySlider">
+                  <i class="fa-solid fa-gauge-high text-accent"></i> Quality &amp; Compression:
+                </label>
+                <div class="quality-display">
+                  <span class="quality-badge" id="qualityTier">High</span>
+                  <span class="quality-value" id="qualityValue">85%</span>
+                </div>
+              </div>
+              <div class="slider-wrapper">
+                <input type="range" id="qualitySlider" min="10" max="100" value="85" step="1" class="custom-slider">
+                <div class="slider-stops">
+                  <span>10% (Min Size)</span>
+                  <span>50%</span>
+                  <span>85% (Balanced)</span>
+                  <span>100% (Lossless)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- PDF Custom Settings Panel (Shown conditionally when format is PDF) -->
+          <div class="pdf-settings-panel" id="pdfSettingsPanel">
+            <div class="panel-divider">
+              <span class="divider-label"><i class="fa-solid fa-gear"></i> PDF Document Configuration</span>
+            </div>
+
+            <div class="pdf-options-grid">
+              <!-- Page Orientation -->
+              <div class="pdf-option-box">
+                <label class="option-title"><i class="fa-solid fa-arrows-split-up-and-left"></i> Orientation</label>
+                <div class="segmented-control" id="pdfOrientationControl">
+                  <button type="button" class="segment-btn active" data-value="portrait">
+                    <i class="fa-solid fa-file"></i> Portrait
+                  </button>
+                  <button type="button" class="segment-btn" data-value="landscape">
+                    <i class="fa-solid fa-file fa-rotate-90"></i> Landscape
+                  </button>
+                </div>
+              </div>
+
+              <!-- Page Margins -->
+              <div class="pdf-option-box">
+                <label class="option-title"><i class="fa-solid fa-border-all"></i> Margins</label>
+                <div class="segmented-control" id="pdfMarginsControl">
+                  <button type="button" class="segment-btn" data-value="none">None (0)</button>
+                  <button type="button" class="segment-btn active" data-value="small">Small (10mm)</button>
+                  <button type="button" class="segment-btn" data-value="medium">Medium (20mm)</button>
+                </div>
+              </div>
+
+              <!-- Merge Mode -->
+              <div class="pdf-option-box">
+                <label class="option-title"><i class="fa-solid fa-object-group"></i> Output Mode</label>
+                <div class="segmented-control" id="pdfMergeModeControl">
+                  <button type="button" class="segment-btn active" data-value="combine" title="Merge all queued pages into 1 single PDF file">
+                    <i class="fa-solid fa-layer-group"></i> Combine in 1 PDF
+                  </button>
+                  <button type="button" class="segment-btn" data-value="separate" title="Create a separate PDF for each image (packaged in ZIP)">
+                    <i class="fa-solid fa-copy"></i> Separate PDFs
+                  </button>
+                </div>
+              </div>
+
+              <!-- Page Fit Mode -->
+              <div class="pdf-option-box">
+                <label class="option-title"><i class="fa-solid fa-expand"></i> Image Scaling</label>
+                <div class="segmented-control" id="pdfFitControl">
+                  <button type="button" class="segment-btn active" data-value="contain" title="Preserve full image aspect ratio without cropping">
+                    <i class="fa-solid fa-compress"></i> Fit Aspect Ratio
+                  </button>
+                  <button type="button" class="segment-btn" data-value="cover" title="Fill full printable area">
+                    <i class="fa-solid fa-maximize"></i> Stretch / Fill
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Queue & Interactive Preview Section -->
+        <div class="queue-section" id="queueSection" style="display: none;">
+          <div class="queue-header">
+            <div class="queue-meta">
+              <h3 class="queue-title">
+                <i class="fa-solid fa-photo-film text-accent"></i> Queued Files 
+                <span class="queue-count-pill" id="queueCountPill">0 files</span>
+              </h3>
+              <span class="queue-size-indicator" id="queueTotalSize">0 MB total</span>
+            </div>
+
+            <div class="queue-quick-actions">
+              <button type="button" class="btn btn-outline-sm" id="addMoreBtn">
+                <i class="fa-solid fa-plus"></i> Add More
+              </button>
+              <button type="button" class="btn btn-ghost-danger-sm" id="clearAllBtn">
+                <i class="fa-solid fa-trash-can"></i> Clear All
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Preview Grid -->
+          <div class="preview-grid" id="previewGrid">
+            <!-- Dynamically populated file cards -->
+          </div>
+
+          <!-- Bottom Floating Action Bar -->
+          <div class="action-bar-card">
+            <div class="action-summary">
+              <div class="action-summary-icon">
+                <i class="fa-solid fa-wand-magic-sparkles text-accent"></i>
+              </div>
+              <div>
+                <div class="action-summary-heading" id="actionSummaryHeading">Ready to convert 0 files to PDF</div>
+                <div class="action-summary-sub" id="actionSummarySub">Output settings: High quality (85%) &bull; Portrait &bull; Small Margins</div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button type="button" class="btn btn-ghost-danger" id="bottomClearBtn">
+                <i class="fa-solid fa-trash-can"></i> Clear
+              </button>
+              <button type="button" class="btn btn-primary-lg btn-glow" id="convertBtn">
+                <i class="fa-solid fa-bolt"></i>
+                <span id="convertBtnText">Convert &amp; Download</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State Guide (When 0 files) -->
+        <div class="empty-guide-card" id="emptyGuide">
+          <div class="guide-grid">
+            <div class="guide-item">
+              <div class="guide-num">1</div>
+              <h4>Add Files</h4>
+              <p>Drop images into the dropzone above or paste directly from clipboard.</p>
+            </div>
+            <div class="guide-item">
+              <div class="guide-num">2</div>
+              <h4>Customize &amp; Order</h4>
+              <p>Rotate individual images or re-order them using the Up/Down sequence controls.</p>
+            </div>
+            <div class="guide-item">
+              <div class="guide-num">3</div>
+              <h4>Convert &amp; Save</h4>
+              <p>Images are instantly processed in your browser memory and downloaded directly.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VIEW 2: HOW IT WORKS (#how-it-works) -->
+    <!-- ============================================== -->
+    <section class="view-section" id="view-how-it-works">
+      <div class="container info-container">
+        
+        <div class="info-hero">
+          <span class="hero-chip"><i class="fa-solid fa-microchip"></i> Under The Hood</span>
+          <h1 class="info-title">How Client-Side Conversion Works</h1>
+          <p class="info-lead">PixelForge Studio runs 100% locally in your browser memory. No backend servers, no cloud queues, and zero file storage.</p>
+        </div>
+
+        <!-- Architecture Flow Cards -->
+        <div class="flow-steps-grid">
+          <div class="flow-card">
+            <div class="flow-badge">Step 1</div>
+            <div class="flow-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
+            <h3>Local Ingestion</h3>
+            <p>Using the native HTML5 <code>FileReader</code> API, files are read directly into memory as Data URLs. They are never sent through a network request.</p>
+          </div>
+
+          <div class="flow-card">
+            <div class="flow-badge">Step 2</div>
+            <div class="flow-icon"><i class="fa-solid fa-palette"></i></div>
+            <h3>HTML5 Canvas Rendering</h3>
+            <p>Images are painted onto high-performance offscreen <code>&lt;canvas&gt;</code> elements with custom matrix transformations for rotations, resampling, and alpha transparency.</p>
+          </div>
+
+          <div class="flow-card">
+            <div class="flow-badge">Step 3</div>
+            <div class="flow-icon"><i class="fa-solid fa-gears"></i></div>
+            <h3>Vector &amp; Raster Encoding</h3>
+            <p>Canvases are exported to target formats via <code>toBlob()</code> with custom compression, or composed into print-ready A4 pages via client-side <code>jsPDF</code>.</p>
+          </div>
+
+          <div class="flow-card">
+            <div class="flow-badge">Step 4</div>
+            <div class="flow-icon"><i class="fa-solid fa-file-zipper"></i></div>
+            <h3>Instant Client Download</h3>
+            <p>Outputs are downloaded directly via virtual anchor blobs or packaged into a unified <code>.zip</code> archive through in-memory <code>JSZip</code>.</p>
+          </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison-section">
+          <h2 class="section-heading"><i class="fa-solid fa-scale-balanced text-accent"></i> PixelForge vs. Cloud Converters</h2>
+          <div class="table-responsive">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>PixelForge Studio (Client-Side)</th>
+                  <th>Typical Cloud Converters</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Privacy &amp; Security</strong></td>
+                  <td><span class="pill-success"><i class="fa-solid fa-check"></i> 100% Private (0 bytes uploaded)</span></td>
+                  <td><span class="pill-danger"><i class="fa-solid fa-xmark"></i> Files stored on 3rd party servers</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Processing Speed</strong></td>
+                  <td><span class="pill-success"><i class="fa-solid fa-bolt"></i> Instant (limited only by CPU/GPU)</span></td>
+                  <td><span class="pill-warning"><i class="fa-solid fa-clock"></i> Slow upload + server queue delay</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Offline Capability</strong></td>
+                  <td><span class="pill-success"><i class="fa-solid fa-check"></i> Works even without internet</span></td>
+                  <td><span class="pill-danger"><i class="fa-solid fa-xmark"></i> Cannot work offline</span></td>
+                </tr>
+                <tr>
+                  <td><strong>File Size &amp; Limits</strong></td>
+                  <td><span class="pill-success"><i class="fa-solid fa-infinity"></i> Unlimited files &amp; conversions</span></td>
+                  <td><span class="pill-danger"><i class="fa-solid fa-ban"></i> Daily limits or paywalls</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="back-to-studio-box">
+          <a href="#converter" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-arrow-left"></i> Return to Studio
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- VIEW 3: PRIVACY POLICY (#privacy) -->
+    <!-- ============================================== -->
+    <section class="view-section" id="view-privacy">
+      <div class="container info-container">
+        
+        <div class="info-hero">
+          <span class="hero-chip hero-chip-success"><i class="fa-solid fa-shield-halved"></i> Absolute Privacy Guarantee</span>
+          <h1 class="info-title">Privacy Policy &amp; Security Architecture</h1>
+          <p class="info-lead">We believe your personal documents and images belong to you and only you. Here is exactly how we guarantee zero data exposure.</p>
+        </div>
+
+        <div class="privacy-content-card">
+          <div class="policy-block">
+            <div class="policy-icon"><i class="fa-solid fa-server"></i></div>
+            <div>
+              <h3>1. Zero Server Uploads</h3>
+              <p>PixelForge Studio has <strong>no backend server</strong>, no ingestion endpoints, and no cloud databases. Every file dropped into the application remains in your device's RAM memory and disappears as soon as you close or reload the browser tab.</p>
+            </div>
+          </div>
+
+          <div class="policy-block">
+            <div class="policy-icon"><i class="fa-solid fa-cookie-bite"></i></div>
+            <div>
+              <h3>2. No Tracking, Cookies, or Fingerprinting</h3>
+              <p>We do not use tracking cookies, analytics pixels, session recording scripts, or telemetry. Your conversion history, file names, file contents, and dimensions are strictly private.</p>
+            </div>
+          </div>
+
+          <div class="policy-block">
+            <div class="policy-icon"><i class="fa-solid fa-network-wired"></i></div>
+            <div>
+              <h3>3. Verifiable In Developer Tools</h3>
+              <p>You can independently verify our architecture at any time. Open your browser's Developer Tools (<kbd>F12</kbd>), navigate to the <strong>Network</strong> tab, and drop files into the converter. You will observe <em>zero outgoing POST or upload requests</em> during conversion and download.</p>
+            </div>
+          </div>
+
+          <div class="policy-block">
+            <div class="policy-icon"><i class="fa-solid fa-memory"></i></div>
+            <div>
+              <h3>4. Automatic Memory Sanitation</h3>
+              <p>When you delete an item or click "Clear All", our JavaScript engine automatically triggers <code>URL.revokeObjectURL()</code> to immediately free system memory allocations and ensure no orphaned binary data lingers in your browser heap.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="back-to-studio-box">
+          <a href="#converter" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-arrow-left"></i> Start Private Conversion
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL: PROCESSING & CONVERSION PROGRESS -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="progressModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-spinner-wrapper">
+        <div class="pulse-ring"></div>
+        <i class="fa-solid fa-gear fa-spin modal-spinner-icon"></i>
+      </div>
+      <h3 class="modal-title" id="modalTitle">Processing Your Files...</h3>
+      <p class="modal-subtitle" id="modalSubtitle">Rendering pages and applying quality compression</p>
+      
+      <div class="progress-track">
+        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+      </div>
+      
+      <div class="progress-meta">
+        <span id="progressPercent">0%</span>
+        <span id="progressItemStatus">Starting conversion pipeline...</span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline-sm" id="cancelProgressBtn">
+          <i class="fa-solid fa-stop"></i> Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: IMAGE PREVIEW LIGHTBOX -->
+  <!-- ============================================== -->
+  <div class="modal-overlay lightbox-overlay" id="lightboxModal" aria-hidden="true">
+    <div class="lightbox-container">
+      <div class="lightbox-header">
+        <div class="lightbox-file-info">
+          <span class="lightbox-filename" id="lightboxFilename">image.png</span>
+          <span class="lightbox-dimensions" id="lightboxDimensions">1920 &times; 1080 px</span>
+        </div>
+        <button type="button" class="lightbox-close-btn" id="lightboxCloseBtn" aria-label="Close Preview">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="lightbox-body">
+        <img src="" alt="Full Preview" id="lightboxImage" class="lightbox-img">
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Application Footer -->
+  <footer class="app-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="brand-icon-sm"><i class="fa-solid fa-layer-group"></i></div>
+        <span><strong>PixelForge Studio</strong> &bull; Client-Side Image &amp; PDF Engine</span>
+      </div>
+      <div class="footer-links">
+        <a href="#converter">Studio</a>
+        <a href="#image-to-pdf">Image to PDF</a>
+        <a href="#jpg-to-png">JPG to PNG</a>
+        <a href="#webp-to-jpg">WEBP to JPG</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#privacy">Privacy Policy</a>
+      </div>
+      <div class="footer-copy">
+        &copy; 2026 PixelForge Studio. 100% In-Browser &bull; Zero Server Processing.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
